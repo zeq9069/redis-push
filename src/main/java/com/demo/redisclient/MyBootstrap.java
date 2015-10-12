@@ -2,6 +2,7 @@ package com.demo.redisclient;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -11,8 +12,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * redis client demo
@@ -26,6 +29,21 @@ import io.netty.handler.codec.string.StringEncoder;
  */
 public class MyBootstrap {
 
+	public static void healthbeat() {
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
+						&& !ClientConnectionCache.isEmpty()) {
+					Channel ch = RedisConnectionCache.getFirst();
+					ch.writeAndFlush("*2\r\n$4\r\nLPOP\r\n$3\r\nwww\r\n");
+				}
+			}
+		}, 0, 1);
+	}
+
 	/**
 	 * 连接redis-server
 	 */
@@ -38,12 +56,14 @@ public class MyBootstrap {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pip = ch.pipeline();
-				pip.addLast(new StringDecoder());
-				pip.addLast(new StringEncoder());
+				pip.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer("$".getBytes())));
+				pip.addLast(new RedisProtocolDecoder());
+				pip.addLast(new RedisProtocolEncoder());
 				pip.addLast(new MyRedisClientHandler());
 			}
 		});
 		try {
+			healthbeat();
 			ChannelFuture cf = client.connect("127.0.0.1", 6379).sync();
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
@@ -54,7 +74,7 @@ public class MyBootstrap {
 	}
 
 	/**
-	 * 启动自定义服务
+	 * 启动自定义服务my server
 	 */
 	public static void serverStart() {
 		EventLoopGroup boss = new NioEventLoopGroup();
@@ -70,8 +90,8 @@ public class MyBootstrap {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pip = ch.pipeline();
-				pip.addLast(new StringDecoder());
-				pip.addLast(new StringEncoder());
+				pip.addLast(new RedisProtocolDecoder());
+				pip.addLast(new RedisProtocolEncoder());
 				pip.addLast(new MyServerHandler());
 			}
 		});

@@ -4,4 +4,4 @@
 
 
 ## My redis-client 框架设计图
- <img src="redis-client框架设计图.png"/>
+ <img src="redis-push服务框架.png"/>

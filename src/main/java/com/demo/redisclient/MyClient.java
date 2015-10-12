@@ -12,7 +12,8 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 /**
- * 
+ *  my client 客户端
+ *  与	my server 连接通信通信
  * @author kyrin
  *
  */

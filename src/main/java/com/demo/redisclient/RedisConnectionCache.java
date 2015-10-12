@@ -24,4 +24,9 @@ public class RedisConnectionCache {
 	public static void remove(Channel value) {
 		redisConnection.remove(value);
 	}
+
+	public static boolean isEmpty() {
+		return redisConnection.isEmpty();
+	}
+
 }

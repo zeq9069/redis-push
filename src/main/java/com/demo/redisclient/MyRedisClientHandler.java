@@ -1,5 +1,6 @@
 package com.demo.redisclient;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -19,12 +20,22 @@ public class MyRedisClientHandler extends ChannelHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		System.out.println(msg.toString());
+		System.out.println("redis-client接收到：" + msg.toString());
+		if (msg.toString().startsWith("$-1") && !ClientConnectionCache.isEmpty()) {
+			Channel ch = ClientConnectionCache.get();
+			ch.writeAndFlush("0");
+			return;
+		}
+		if (!ClientConnectionCache.isEmpty()) {
+			Channel ch = ClientConnectionCache.get();
+			if (ch != null && ch.isActive()) {
+				ClientConnectionCache.get().writeAndFlush(msg);
+			}
+		}
 	}
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
 		ctx.flush();
 	}
-
 }
