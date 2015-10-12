@@ -21,12 +21,7 @@ public class MyRedisClientHandler extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		System.out.println("redis-client接收到：" + msg.toString());
-		if (msg.toString().startsWith("$-1") && !ClientConnectionCache.isEmpty()) {
-			Channel ch = ClientConnectionCache.get();
-			ch.writeAndFlush("0");
-			return;
-		}
-		if (!ClientConnectionCache.isEmpty()) {
+		if (!msg.equals("0") && !ClientConnectionCache.isEmpty()) {
 			Channel ch = ClientConnectionCache.get();
 			if (ch != null && ch.isActive()) {
 				ClientConnectionCache.get().writeAndFlush(msg);
