@@ -1,4 +1,4 @@
-package com.demo.redisclient;
+package com.demo.rpush;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

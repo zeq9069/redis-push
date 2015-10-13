@@ -1,4 +1,4 @@
-package com.demo.redisclient;
+package com.demo.rpush;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

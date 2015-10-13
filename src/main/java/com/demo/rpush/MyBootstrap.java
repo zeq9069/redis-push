@@ -1,4 +1,4 @@
-package com.demo.redisclient;
+package com.demo.rpush;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -114,6 +114,7 @@ public class MyBootstrap {
 			public void run() {
 				serverStart();
 			}
+
 		}).start();
 		new Thread(new Runnable() {
 			@Override

@@ -1,4 +1,4 @@
-package com.demo.redisclient;
+package com.demo.rpush;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
