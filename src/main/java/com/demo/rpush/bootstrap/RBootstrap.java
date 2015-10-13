@@ -17,6 +17,8 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
+import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
 import com.demo.rpush.cache.ClientConnectionCache;
 import com.demo.rpush.cache.RedisConnectionCache;
 import com.demo.rpush.codec.RedisProtocolDecoder;
@@ -25,8 +27,6 @@ import com.demo.rpush.handler.RedisClientHandler;
 import com.demo.rpush.handler.ServerHandler;
 
 /**
- * redis client demo
- * 
  *  根据redis s/c的通信协议原理，实现与redis server的通信
  *  
  * @see http://redis.readthedocs.org/en/latest/topic/protocol.html
@@ -36,10 +36,15 @@ import com.demo.rpush.handler.ServerHandler;
  */
 public class RBootstrap {
 
+	private static RPushPropertiesConfig rPushConfig;
+
+	public RBootstrap() {
+		rPushConfig = new RPushPropertiesConfig(new ConfigLoader());
+	}
+
 	public static void healthbeat() {
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
-
 			@Override
 			public void run() {
 				if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
@@ -71,7 +76,8 @@ public class RBootstrap {
 		});
 		try {
 			healthbeat();
-			ChannelFuture cf = client.connect("127.0.0.1", 6379).sync();
+			ChannelFuture cf = client.connect(rPushConfig.getRedisConfig().getHost(),
+					rPushConfig.getRedisConfig().getPort()).sync();
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -104,7 +110,7 @@ public class RBootstrap {
 		});
 
 		try {
-			ChannelFuture cf = server.bind(7379).sync();
+			ChannelFuture cf = server.bind(rPushConfig.getrServerConfig().getPort()).sync();
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -115,7 +121,7 @@ public class RBootstrap {
 
 	}
 
-	public static void main(String[] args) {
+	private void start() {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -129,6 +135,10 @@ public class RBootstrap {
 				clientStart();
 			}
 		}).start();
+	}
 
+	public static void main(String[] args) {
+		RBootstrap rb = new RBootstrap();
+		rb.start();
 	}
 }

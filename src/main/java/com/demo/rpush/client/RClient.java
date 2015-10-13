@@ -1,7 +1,5 @@
 package com.demo.rpush.client;
 
-import com.demo.rpush.handler.ClientHandler;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -13,13 +11,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
+import com.demo.rpush.handler.ClientHandler;
+
 /**
- *  my client 客户端
- *  与	my server 连接通信通信
+ *  client 客户端
+ *  与server 连接通信通信
  * @author kyrin
  *
  */
-public class MyClient {
+public class RClient {
 
 	public static void main(String[] args) {
 		EventLoopGroup b = new NioEventLoopGroup();
