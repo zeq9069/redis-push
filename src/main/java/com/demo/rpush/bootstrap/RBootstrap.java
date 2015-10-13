@@ -21,8 +21,8 @@ import com.demo.rpush.cache.ClientConnectionCache;
 import com.demo.rpush.cache.RedisConnectionCache;
 import com.demo.rpush.codec.RedisProtocolDecoder;
 import com.demo.rpush.codec.RedisProtocolEncoder;
-import com.demo.rpush.handler.MyRedisClientHandler;
-import com.demo.rpush.handler.MyServerHandler;
+import com.demo.rpush.handler.RedisClientHandler;
+import com.demo.rpush.handler.ServerHandler;
 
 /**
  * redis client demo
@@ -66,7 +66,7 @@ public class RBootstrap {
 				pip.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer("$".getBytes())));
 				pip.addLast(new RedisProtocolDecoder());
 				pip.addLast(new RedisProtocolEncoder());
-				pip.addLast(new MyRedisClientHandler());
+				pip.addLast(new RedisClientHandler());
 			}
 		});
 		try {
@@ -99,7 +99,7 @@ public class RBootstrap {
 				ChannelPipeline pip = ch.pipeline();
 				pip.addLast(new RedisProtocolDecoder());
 				pip.addLast(new RedisProtocolEncoder());
-				pip.addLast(new MyServerHandler());
+				pip.addLast(new ServerHandler());
 			}
 		});
 

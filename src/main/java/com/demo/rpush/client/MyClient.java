@@ -1,6 +1,6 @@
 package com.demo.rpush.client;
 
-import com.demo.rpush.handler.MyClientHandler;
+import com.demo.rpush.handler.ClientHandler;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -32,7 +32,7 @@ public class MyClient {
 				ChannelPipeline pip = ch.pipeline();
 				pip.addLast(new StringDecoder());
 				pip.addLast(new StringEncoder());
-				pip.addLast(new MyClientHandler());
+				pip.addLast(new ClientHandler());
 			}
 		});
 		try {

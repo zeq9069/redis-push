@@ -1,18 +1,13 @@
 package com.demo.rpush.handler;
 
 import com.demo.rpush.cache.ClientConnectionCache;
+import com.demo.rpush.cache.RedisConnectionCache;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.socket.SocketChannel;
 
-/**
- * 
- * @author kyrin
- *
- */
-public class MyServerHandler extends ChannelHandlerAdapter {
+public class RedisClientHandler extends ChannelHandlerAdapter {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -22,23 +17,23 @@ public class MyServerHandler extends ChannelHandlerAdapter {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		System.out.println("channelActive");
-		Channel ch = ctx.channel();
-		if (ch instanceof SocketChannel) {
-			SocketChannel is = (SocketChannel) ch;
-			ClientConnectionCache.put(is.remoteAddress().getHostName(), ctx.channel());
-			System.out.println(is.remoteAddress().getHostName() + ":" + is.remoteAddress().getPort());
-		}
+		System.out.println("active");
+		RedisConnectionCache.add(ctx.channel());
 	}
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+		System.out.println("redis-client接收到：" + msg.toString());
+		if (!msg.equals("0") && !ClientConnectionCache.isEmpty()) {
+			Channel ch = ClientConnectionCache.get();
+			if (ch != null && ch.isActive()) {
+				ClientConnectionCache.get().writeAndFlush(msg);
+			}
+		}
 	}
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-		System.out.println("channelReadComplete");
 		ctx.flush();
 	}
-
 }
