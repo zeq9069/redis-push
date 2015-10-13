@@ -1,4 +1,4 @@
-package com.demo.rpush;
+package com.demo.rpush.bootstrap;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -17,6 +17,13 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.demo.rpush.cache.ClientConnectionCache;
+import com.demo.rpush.cache.RedisConnectionCache;
+import com.demo.rpush.codec.RedisProtocolDecoder;
+import com.demo.rpush.codec.RedisProtocolEncoder;
+import com.demo.rpush.handler.MyRedisClientHandler;
+import com.demo.rpush.handler.MyServerHandler;
+
 /**
  * redis client demo
  * 
@@ -27,7 +34,7 @@ import java.util.TimerTask;
  * @author kyrin
  *
  */
-public class MyBootstrap {
+public class RBootstrap {
 
 	public static void healthbeat() {
 		Timer t = new Timer();

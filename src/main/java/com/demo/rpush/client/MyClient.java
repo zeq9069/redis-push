@@ -1,4 +1,6 @@
-package com.demo.rpush;
+package com.demo.rpush.client;
+
+import com.demo.rpush.handler.MyClientHandler;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

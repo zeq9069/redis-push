@@ -1,4 +1,4 @@
-package com.demo.rpush;
+package com.demo.rpush.handler;
 
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;

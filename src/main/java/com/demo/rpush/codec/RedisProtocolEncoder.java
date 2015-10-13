@@ -1,4 +1,4 @@
-package com.demo.rpush;
+package com.demo.rpush.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

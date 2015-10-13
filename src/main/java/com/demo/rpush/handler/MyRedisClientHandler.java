@@ -1,4 +1,7 @@
-package com.demo.rpush;
+package com.demo.rpush.handler;
+
+import com.demo.rpush.cache.ClientConnectionCache;
+import com.demo.rpush.cache.RedisConnectionCache;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;

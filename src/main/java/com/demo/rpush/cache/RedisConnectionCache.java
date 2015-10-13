@@ -1,4 +1,4 @@
-package com.demo.rpush;
+package com.demo.rpush.cache;
 
 import io.netty.channel.Channel;
 
