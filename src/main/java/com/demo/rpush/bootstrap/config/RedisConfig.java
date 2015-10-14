@@ -10,15 +10,16 @@ public class RedisConfig {
 	private String host;
 	private int port;
 	private String queue;
+	private String queueType;
 
 	public RedisConfig() {
 	}
 
-	public RedisConfig(String host, int port, String queue) {
+	public RedisConfig(String host, int port, String queue, String queueType) {
 		this.host = host;
 		this.port = port;
 		this.queue = queue;
-
+		this.queueType = queueType;
 	}
 
 	public String getHost() {
@@ -45,4 +46,22 @@ public class RedisConfig {
 		this.queue = queue;
 	}
 
+	public String getQueueType() {
+		return queueType;
+	}
+
+	public void setQueueType(String queueType) {
+		this.queueType = queueType;
+	}
+
+	public String getCommand() {
+		switch (queueType) {
+		case "list":
+			return String.format("*2\r\n$4\r\nLPOP\r\n$%d\r\n%s\r\n", queue.length(), queue);
+		case "set":
+			return String.format("*2\r\n$4\r\nSPOP\r\n$%d\r\n%s\r\n", queue.length(), queue);
+		default:
+			throw new IllegalArgumentException(String.format("queueType 不是合法队列类型：list or set "));
+		}
+	}
 }

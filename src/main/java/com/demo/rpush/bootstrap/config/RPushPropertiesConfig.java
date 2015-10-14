@@ -39,6 +39,12 @@ public class RPushPropertiesConfig {
 		} else {
 			throw new IllegalArgumentException(String.format("缺少参数:%s", ConfigProperties.RPUSH_REDIS_QUEUE));
 		}
+		String queueType = property.getProperty(ConfigProperties.RPUSH_REDIS_QUEUE_TYPE);
+		if (Util.hasText(queueType)) {
+			redisConfig.setQueueType(queueType);
+		} else {
+			throw new IllegalArgumentException(String.format("缺少参数:%s", ConfigProperties.RPUSH_REDIS_QUEUE_TYPE));
+		}
 		return redisConfig;
 	}
 

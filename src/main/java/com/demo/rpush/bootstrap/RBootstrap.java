@@ -2,7 +2,6 @@ package com.demo.rpush.bootstrap;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -12,7 +11,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,9 +35,12 @@ import com.demo.rpush.handler.ServerHandler;
 public class RBootstrap {
 
 	private static RPushPropertiesConfig rPushConfig;
+	private static String command;
 
+	@SuppressWarnings("static-access")
 	public RBootstrap() {
 		rPushConfig = new RPushPropertiesConfig(new ConfigLoader());
+		this.command = rPushConfig.getRedisConfig().getCommand();
 	}
 
 	public static void healthbeat() {
@@ -50,7 +51,7 @@ public class RBootstrap {
 				if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
 						&& !ClientConnectionCache.isEmpty()) {
 					Channel ch = RedisConnectionCache.getFirst();
-					ch.writeAndFlush("*2\r\n$4\r\nLPOP\r\n$3\r\nwww\r\n");
+					ch.writeAndFlush(command);
 				}
 			}
 		}, 0, 1);
@@ -68,7 +69,7 @@ public class RBootstrap {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pip = ch.pipeline();
-				pip.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer("$".getBytes())));
+				/*pip.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer("\r\n".getBytes())));*/
 				pip.addLast(new RedisProtocolDecoder());
 				pip.addLast(new RedisProtocolEncoder());
 				pip.addLast(new RedisClientHandler());

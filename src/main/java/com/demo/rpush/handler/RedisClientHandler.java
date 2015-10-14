@@ -1,11 +1,12 @@
 package com.demo.rpush.handler;
 
-import com.demo.rpush.cache.ClientConnectionCache;
-import com.demo.rpush.cache.RedisConnectionCache;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+
+import com.demo.rpush.bootstrap.exception.RedisServiceException;
+import com.demo.rpush.cache.ClientConnectionCache;
+import com.demo.rpush.cache.RedisConnectionCache;
 
 public class RedisClientHandler extends ChannelHandlerAdapter {
 
@@ -28,6 +29,8 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 			Channel ch = ClientConnectionCache.get();
 			if (ch != null && ch.isActive()) {
 				ClientConnectionCache.get().writeAndFlush(msg);
+			} else {
+				throw new RedisServiceException("redis 服务出现异常");
 			}
 		}
 	}
