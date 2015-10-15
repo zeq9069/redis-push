@@ -28,7 +28,7 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 		if (!msg.equals("0") && !ClientConnectionCache.isEmpty()) {
 			Channel ch = ClientConnectionCache.get();
 			if (ch != null && ch.isActive()) {
-				ClientConnectionCache.get().writeAndFlush(msg);
+				ClientConnectionCache.get().writeAndFlush(msg + "\r\n");//消息以CLRF结尾
 			} else {
 				throw new RedisServiceException("redis 服务出现异常");
 			}

@@ -5,8 +5,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
+
+import com.demo.rpush.bootstrap.exception.RedisQueueTypeException;
 
 /**
  * 
@@ -23,70 +24,47 @@ import java.util.List;
  */
 public class RedisProtocolDecoder extends ByteToMessageDecoder {
 
-	private byte[] bbuf = new byte[1024];
-
+	/**
+	 * 一个字节一个字节的去处理数据，因为数据会被挤压到bytebuf中，按照规律一个自己一个字节的去处理，不会出现粘包/读半包的问题
+	 */
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
 
-		/*byte[] bb = new byte[in.readableBytes()];
-		in.readBytes(bb, 0, in.readableBytes());
-		String str = new String(bb, Charset.defaultCharset());
-
-		if (str.toLowerCase().equals("$-1")) {
-			out.add("0");
+		if (in.readableBytes() < 2) {
 			return;
 		}
-		if (!str.toLowerCase().startsWith("$")) {
-			out.add(str);
-		}*/
-
-		if (!Arrays.asList(bbuf).isEmpty()) {
-			ByteBuf gg = in.copy();
-			in.readBytes(bbuf, in.readerIndex(), in.readableBytes());
-			String str = new String(bbuf, Charset.defaultCharset());
-			in = gg.copy();
-			bbuf = new byte[1024];
-		}
-		while (true) {
-			ByteBuf bbb = de(out, in);
-			if (bbb == null) {
-				return;
-			} else {
-				in = bbb;
-			}
-		}
-	}
-
-	public ByteBuf de(List<Object> out, ByteBuf in) {
-		byte key = in.readByte();
-		String num = "";
-		if (key == '$') {
+		byte first = in.readByte();
+		if (first == '$') {//如果是批量恢复数据
+			String v = "";
 			while (in.readableBytes() > 0) {
-				byte b = in.readByte();
-				if (b == '\r') {
+				byte enter = in.readByte();
+				if (enter == '\r') {
 					in.skipBytes(1);
 					break;
 				}
-				num += String.valueOf((char) b);
+				v += (char) enter;
 			}
-			int value = Integer.parseInt(num);
-			if (value == -1) {
-				out.add(0);
-				in.skipBytes(2);
-			} else {
-				in.skipBytes(2);
-				ByteBuf buf = in.readBytes(value);
-				in.skipBytes(2);
-				byte[] bb = new byte[buf.readableBytes()];
-				buf.readBytes(bb, 0, buf.readableBytes());
-				String str = new String(bb, Charset.defaultCharset());
-				out.add(str);
+			int length = Integer.parseInt(v);
+			if (length == -1) {
+				out.add("0");
+				return;
 			}
-		} else {
-			bbuf[0] = key;
-			in.readBytes(bbuf, in.readerIndex(), in.readableBytes());
-			return null;
+			byte[] bb = new byte[length];
+			in.readBytes(bb, 0, length);
+			in.skipBytes(2);
+			String value = new String(bb, Charset.defaultCharset());
+			out.add(value);
+		} else if (first == '-') {//如果出现错误
+			String result = "";
+			while (in.readableBytes() > 0) {
+				byte enter = in.readByte();
+				if (enter == '\r') {
+					in.skipBytes(1);
+					break;
+				}
+				result += (char) enter;
+			}
+			throw new RedisQueueTypeException("redis server返回错误信息:" + result);
 		}
-		return in;
 	}
 }

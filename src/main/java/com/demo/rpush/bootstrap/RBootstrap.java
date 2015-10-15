@@ -69,7 +69,7 @@ public class RBootstrap {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pip = ch.pipeline();
-				/*pip.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer("\r\n".getBytes())));*/
+				//pip.addLast(new DelimiterBasedFrameDecoder(1024, false, Unpooled.copiedBuffer("\r\n".getBytes())));
 				pip.addLast(new RedisProtocolDecoder());
 				pip.addLast(new RedisProtocolEncoder());
 				pip.addLast(new RedisClientHandler());
