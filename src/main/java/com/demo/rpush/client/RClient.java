@@ -32,7 +32,7 @@ public class RClient {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pip = ch.pipeline();
-				pip.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer("\r\n".getBytes())));//分割
+				pip.addLast(new DelimiterBasedFrameDecoder(1024, true, Unpooled.copiedBuffer("\r\n".getBytes())));//分割
 				pip.addLast(new StringDecoder());
 				pip.addLast(new StringEncoder());
 				pip.addLast(new ClientHandler());

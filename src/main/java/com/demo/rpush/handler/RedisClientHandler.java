@@ -25,7 +25,7 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		System.out.println("redis-client接收到：" + msg.toString());
-		if (!msg.equals("0") && !ClientConnectionCache.isEmpty()) {
+		if (!ClientConnectionCache.isEmpty()) {
 			Channel ch = ClientConnectionCache.get();
 			if (ch != null && ch.isActive()) {
 				ClientConnectionCache.get().writeAndFlush(msg + "\r\n");//消息以CLRF结尾

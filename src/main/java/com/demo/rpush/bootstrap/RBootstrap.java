@@ -64,6 +64,9 @@ public class RBootstrap {
 		EventLoopGroup b = new NioEventLoopGroup();
 		Bootstrap client = new Bootstrap();
 		client.group(b);
+		client.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 6000).option(ChannelOption.TCP_NODELAY, true)
+				.option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_KEEPALIVE, true)
+				.option(ChannelOption.SO_SNDBUF, 65535).option(ChannelOption.SO_RCVBUF, 65535);
 		client.channel(NioSocketChannel.class);
 		client.handler(new ChannelInitializer<Channel>() {
 			@Override

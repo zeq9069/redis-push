@@ -24,29 +24,40 @@ import com.demo.rpush.bootstrap.exception.RedisQueueTypeException;
  */
 public class RedisProtocolDecoder extends ByteToMessageDecoder {
 
-	/**
-	 * 一个字节一个字节的去处理数据，因为数据会被挤压到bytebuf中，按照规律一个自己一个字节的去处理，不会出现粘包/读半包的问题
-	 */
+	//bytebuf 没读取的会等到下去获取更多的数据时读取，
+	//一条命令一条命令的去处理
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-
-		if (in.readableBytes() < 2) {
+		//一条完整命令至少的字节数
+		if (in.readableBytes() <= 5) {
 			return;
 		}
+
+		if (!check(in)) {
+			return;
+		}
+
 		byte first = in.readByte();
 		if (first == '$') {//如果是批量恢复数据
 			String v = "";
-			while (in.readableBytes() > 0) {
+			while (in.readableBytes() >= 2) {
 				byte enter = in.readByte();
 				if (enter == '\r') {
+					if (in.readableBytes() <= 1) {
+						return;
+					}
 					in.skipBytes(1);
 					break;
 				}
 				v += (char) enter;
 			}
+
 			int length = Integer.parseInt(v);
 			if (length == -1) {
-				out.add("0");
+				return;
+			}
+			if (length > in.readableBytes()) {
+				//throw new RedisOneElementTooLongException("redis queue 中的一个数据超长");
 				return;
 			}
 			byte[] bb = new byte[length];
@@ -66,5 +77,36 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 			}
 			throw new RedisQueueTypeException("redis server返回错误信息:" + result);
 		}
+
+		//in.discardReadBytes();
+
+	}
+
+	/**
+	 * 检查是否至少包含一条完整命令
+	 * @param in
+	 * @return
+	 */
+	public boolean check(ByteBuf in) {
+		byte[] b1 = new byte[in.readableBytes()];
+		ByteBuf in2 = in.copy();
+		in2.readBytes(b1, 0, in2.readableBytes());
+		in2.release();
+		in2 = null;
+		String len = "";
+		for (byte b : b1) {
+			if (b != '$') {
+				if (b == '\r') {
+					break;
+				}
+				len += (char) b;
+			}
+		}
+		int len2 = Integer.parseInt(len);
+		if (in.readableBytes() < len2 + 1 + 2 + 2) {
+			b1 = null;
+			return false;
+		}
+		return true;
 	}
 }
