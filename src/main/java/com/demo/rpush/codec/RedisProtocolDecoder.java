@@ -34,6 +34,7 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 		}
 
 		if (!check(in)) {
+			//不满足一条完整命令，等挤压更多数据（条件：in内容不变，out内容不变）
 			return;
 		}
 
