@@ -20,6 +20,7 @@ import com.demo.rpush.bootstrap.exception.RedisQueueTypeException;
  * 注意:
  * 我们每次轮询都是一个一个的拉取数据，所以在编解码的时候，考虑粘包的时候，不需要考虑多条批量恢复"*"
  * @author kyrin
+ * @date 2015年10月16日
  *
  */
 public class RedisProtocolDecoder extends ByteToMessageDecoder {

@@ -1,4 +1,4 @@
-package com.demo.rpush.cache;
+package com.demo.rpush.connection;
 
 import io.netty.channel.Channel;
 
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 /**
  * redis channel 缓存
  * @author kyrin
- *
+ * @date 2015年10月16日
  */
 public class RedisConnectionCache {
 

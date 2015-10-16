@@ -9,12 +9,14 @@ public class RPushPropertiesConfig {
 
 	private final RedisConfig redisConfig;
 	private final RServerConfig rServerConfig;
+	private final ClientConfig clientConfig;
 	private ConfigLoader loader;
 
 	public RPushPropertiesConfig(ConfigLoader loader) {
 		this.loader = loader;
 		this.redisConfig = loadRedisConfig();
 		this.rServerConfig = loadRServerConfig();
+		this.clientConfig = loadClientConfig();
 	}
 
 	private RedisConfig loadRedisConfig() {
@@ -60,12 +62,30 @@ public class RPushPropertiesConfig {
 		return rServerConfig;
 	}
 
+	private ClientConfig loadClientConfig() {
+		ClientConfig cc = new ClientConfig();
+		Properties property = loader.getProperties();
+		String max = property.getProperty(ConfigProperties.RPUSH_CLIENT_MAX);
+		if (Util.hasText(max)) {
+			cc.setMax(Integer.parseInt(max));
+		}
+		String route = property.getProperty(ConfigProperties.RPUSH_CLIENT_ROUTE);
+		if (Util.hasText(route)) {
+			cc.setRoute(route);
+		}
+		return cc;
+	}
+
 	public RedisConfig getRedisConfig() {
 		return redisConfig;
 	}
 
 	public RServerConfig getrServerConfig() {
 		return rServerConfig;
+	}
+
+	public ClientConfig getClientConfig() {
+		return clientConfig;
 	}
 
 }

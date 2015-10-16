@@ -1,11 +1,14 @@
 package com.demo.rpush.handler;
 
-import com.demo.rpush.cache.ClientConnectionCache;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
+
+import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
+import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
+import com.demo.rpush.connection.ClientConnection;
+import com.demo.rpush.connection.ClientConnectionCache;
 
 /**
  * 
@@ -23,10 +26,17 @@ public class ServerHandler extends ChannelHandlerAdapter {
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		System.out.println("channelActive");
+
+		//限制客户端的最大连接数
+		if (new RPushPropertiesConfig(new ConfigLoader()).getClientConfig().getMax() <= ClientConnectionCache.size()) {
+			ctx.writeAndFlush("Refuse to connect,because more than the number of max client connections.\r\n");
+			ctx.close();
+		}
 		Channel ch = ctx.channel();
 		if (ch instanceof SocketChannel) {
 			SocketChannel is = (SocketChannel) ch;
-			ClientConnectionCache.put(is.remoteAddress().getHostName(), ctx.channel());
+			ClientConnection cc = new ClientConnection(is.remoteAddress().getHostName(), ctx.channel());
+			ClientConnectionCache.add(cc);
 			System.out.println(is.remoteAddress().getHostName() + ":" + is.remoteAddress().getPort());
 		}
 	}

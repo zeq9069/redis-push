@@ -17,10 +17,10 @@ import java.util.TimerTask;
 
 import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
 import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
-import com.demo.rpush.cache.ClientConnectionCache;
-import com.demo.rpush.cache.RedisConnectionCache;
 import com.demo.rpush.codec.RedisProtocolDecoder;
 import com.demo.rpush.codec.RedisProtocolEncoder;
+import com.demo.rpush.connection.ClientConnectionCache;
+import com.demo.rpush.connection.RedisConnectionCache;
 import com.demo.rpush.handler.RedisClientHandler;
 import com.demo.rpush.handler.ServerHandler;
 
@@ -43,7 +43,7 @@ public class RBootstrap {
 		this.command = rPushConfig.getRedisConfig().getCommand();
 	}
 
-	public static void healthbeat() {
+	private static void healthbeat() {
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
@@ -60,7 +60,7 @@ public class RBootstrap {
 	/**
 	 * 连接redis-server
 	 */
-	public static void clientStart() {
+	private static void clientStart() {
 		EventLoopGroup b = new NioEventLoopGroup();
 		Bootstrap client = new Bootstrap();
 		client.group(b);
@@ -93,7 +93,7 @@ public class RBootstrap {
 	/**
 	 * 启动自定义服务my server
 	 */
-	public static void serverStart() {
+	private static void serverStart() {
 		EventLoopGroup boss = new NioEventLoopGroup();
 		EventLoopGroup work = new NioEventLoopGroup();
 
@@ -125,7 +125,7 @@ public class RBootstrap {
 
 	}
 
-	private void start() {
+	public void start() {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {

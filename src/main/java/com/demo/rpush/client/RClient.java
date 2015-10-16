@@ -19,11 +19,13 @@ import com.demo.rpush.handler.ClientHandler;
  *  client 客户端
  *  与server 连接通信通信
  * @author kyrin
+ * @date 2015年10月16日
  *
  */
 public class RClient {
 
-	public static void main(String[] args) {
+	public void start() {
+
 		EventLoopGroup b = new NioEventLoopGroup();
 		Bootstrap client = new Bootstrap();
 		client.group(b);
@@ -40,11 +42,17 @@ public class RClient {
 		});
 		try {
 			ChannelFuture cf = client.connect("127.0.0.1", 7379).sync();
+
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
 			b.shutdownGracefully();
 		}
+	}
+
+	public static void main(String[] args) {
+		RClient rc = new RClient();
+		rc.start();
 	}
 }

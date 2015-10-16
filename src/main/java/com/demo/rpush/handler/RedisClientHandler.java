@@ -5,8 +5,9 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
 import com.demo.rpush.bootstrap.exception.RedisServiceException;
-import com.demo.rpush.cache.ClientConnectionCache;
-import com.demo.rpush.cache.RedisConnectionCache;
+import com.demo.rpush.connection.ClientConnection;
+import com.demo.rpush.connection.ClientConnectionCache;
+import com.demo.rpush.connection.RedisConnectionCache;
 
 public class RedisClientHandler extends ChannelHandlerAdapter {
 
@@ -26,9 +27,14 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		System.out.println("redis-client接收到：" + msg.toString());
 		if (!ClientConnectionCache.isEmpty()) {
-			Channel ch = ClientConnectionCache.get();
+			ClientConnection cc = ClientConnectionCache.get();
+			Channel ch = cc.getChannel();
 			if (ch != null && ch.isActive()) {
-				ClientConnectionCache.get().writeAndFlush(msg + "\r\n");//消息以CLRF结尾
+				try {
+					ch.writeAndFlush(msg + "\r\n");//消息以CLRF结尾
+				} finally {
+					ClientConnectionCache.add(cc);
+				}
 			} else {
 				throw new RedisServiceException("redis 服务出现异常");
 			}
