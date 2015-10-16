@@ -48,6 +48,7 @@ public class RBootstrap {
 	}
 
 	private static void pull() {
+		
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
@@ -55,10 +56,12 @@ public class RBootstrap {
 				if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
 						&& !ClientConnectionCache.isEmpty()) {
 					Channel ch = RedisConnectionCache.getFirst();
-					ch.writeAndFlush(command);
+					for(int i=0;i<100;i++){
+						ch.writeAndFlush(command);
+					}
 				}
 			}
-		}, 0, 1);
+		}, 0,1);
 	}
 
 	/**
@@ -83,7 +86,6 @@ public class RBootstrap {
 			}
 		});
 		try {
-			pull();
 			ChannelFuture cf = client.connect(rPushConfig.getRedisConfig().getHost(),
 					rPushConfig.getRedisConfig().getPort()).sync();
 			cf.channel().closeFuture().sync();
@@ -144,6 +146,7 @@ public class RBootstrap {
 	}
 
 	public void start() {
+		
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -157,6 +160,7 @@ public class RBootstrap {
 				clientStart();
 			}
 		}).start();
+		pull();
 	}
 
 	public static void main(String[] args) {
