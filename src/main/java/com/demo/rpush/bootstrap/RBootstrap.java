@@ -14,6 +14,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
 import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
@@ -36,6 +39,7 @@ public class RBootstrap {
 
 	private static RPushPropertiesConfig rPushConfig;
 	private static String command;
+	private static ScheduledExecutorService exec = new ScheduledThreadPoolExecutor(1);
 
 	@SuppressWarnings("static-access")
 	public RBootstrap() {
@@ -86,7 +90,21 @@ public class RBootstrap {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
-			b.shutdownGracefully();
+			exec.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						TimeUnit.SECONDS.sleep(5);
+						try {
+							clientStart();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
 		}
 	}
 

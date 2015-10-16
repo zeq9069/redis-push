@@ -13,6 +13,10 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.demo.rpush.handler.ClientHandler;
 
 /**
@@ -23,6 +27,8 @@ import com.demo.rpush.handler.ClientHandler;
  *
  */
 public class RClient {
+
+	private static ScheduledExecutorService exec = new ScheduledThreadPoolExecutor(1);
 
 	public void start() {
 
@@ -47,7 +53,22 @@ public class RClient {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
-			b.shutdownGracefully();
+			exec.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						TimeUnit.SECONDS.sleep(5);
+						try {
+							start();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+				}
+			});
 		}
 	}
 
