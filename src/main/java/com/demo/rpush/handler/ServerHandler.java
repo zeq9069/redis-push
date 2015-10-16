@@ -29,7 +29,7 @@ public class ServerHandler extends ChannelHandlerAdapter {
 
 		//限制客户端的最大连接数
 		if (new RPushPropertiesConfig(new ConfigLoader()).getClientConfig().getMax() <= ClientConnectionCache.size()) {
-			ctx.writeAndFlush("Refuse to connect,because more than the number of max client connections.---"+ClientConnectionCache.size()+"---\r\n");
+			ctx.writeAndFlush("Refuse to connect,because more than the number of max client connections.\r\n");
 			ctx.close();
 			return;
 		}
