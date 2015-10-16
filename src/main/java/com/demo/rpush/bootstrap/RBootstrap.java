@@ -47,7 +47,7 @@ public class RBootstrap {
 		this.command = rPushConfig.getRedisConfig().getCommand();
 	}
 
-	private static void healthbeat() {
+	private static void pull() {
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
@@ -83,7 +83,7 @@ public class RBootstrap {
 			}
 		});
 		try {
-			healthbeat();
+			pull();
 			ChannelFuture cf = client.connect(rPushConfig.getRedisConfig().getHost(),
 					rPushConfig.getRedisConfig().getPort()).sync();
 			cf.channel().closeFuture().sync();
