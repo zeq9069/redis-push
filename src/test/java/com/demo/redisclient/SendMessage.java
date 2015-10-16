@@ -33,7 +33,7 @@ public class SendMessage {
 			}
 		});
 		try {
-			ChannelFuture cf = client.connect("202.205.180.29", 6379).sync();
+			ChannelFuture cf = client.connect("127.0.0.1", 6379).sync();
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
 			e.printStackTrace();

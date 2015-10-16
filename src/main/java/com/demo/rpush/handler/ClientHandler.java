@@ -3,7 +3,11 @@ package com.demo.rpush.handler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class ClientHandler extends ChannelHandlerAdapter {
+	private AtomicInteger index = new AtomicInteger(0);
+
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		cause.printStackTrace();
@@ -17,7 +21,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		System.out.println("服务端返回结果：" + msg.toString());
+		System.out.println("服务端返回结果：" + msg.toString() + "-" + index.getAndIncrement());
 	}
 
 	@Override

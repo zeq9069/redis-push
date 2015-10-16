@@ -33,21 +33,16 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 		if (in.readableBytes() <= 5) {
 			return;
 		}
-
 		if (!check(in)) {
 			//不满足一条完整命令，等挤压更多数据（条件：in内容不变，out内容不变）
 			return;
 		}
-
 		byte first = in.readByte();
 		if (first == '$') {//如果是批量回复数据
 			String v = "";
 			while (in.readableBytes() >= 2) {
 				byte enter = in.readByte();
 				if (enter == '\r') {
-					/*if (in.readableBytes() <= 1) {
-						return;
-					}*/
 					in.skipBytes(1);
 					break;
 				}
@@ -58,10 +53,6 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 			if (length == -1) {
 				return;
 			}
-			/*	if (length > in.readableBytes()) {
-					//throw new RedisOneElementTooLongException("redis queue 中的一个数据超长");
-					return;
-				}*/
 			byte[] bb = new byte[length];
 			in.readBytes(bb, 0, length);
 			in.skipBytes(2);
@@ -79,8 +70,6 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 			}
 			throw new RedisQueueTypeException("redis server返回错误信息:" + result);
 		}
-
-		//in.discardReadBytes();
 
 	}
 
