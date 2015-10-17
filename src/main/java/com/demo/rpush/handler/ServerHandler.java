@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 
+import com.demo.rpush.bootstrap.config.ClientConfig;
 import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
 import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
 import com.demo.rpush.connection.ClientConnection;
@@ -16,6 +17,11 @@ import com.demo.rpush.connection.ClientConnectionCache;
  *
  */
 public class ServerHandler extends ChannelHandlerAdapter {
+	
+	private ClientConfig clientConfig;
+	public ServerHandler(ClientConfig clientConfig) {
+		this.clientConfig=clientConfig;
+	}
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -28,7 +34,8 @@ public class ServerHandler extends ChannelHandlerAdapter {
 		System.out.println("channelActive");
 
 		//限制客户端的最大连接数
-		if (new RPushPropertiesConfig(new ConfigLoader()).getClientConfig().getMax() <= ClientConnectionCache.size()) {
+		int max=clientConfig.getMax() ;
+		if (max==-1 ||  max<= ClientConnectionCache.size()) {
 			ctx.writeAndFlush("Refuse to connect,because more than the number of max client connections.\r\n");
 			ctx.close();
 			return;

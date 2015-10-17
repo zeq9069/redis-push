@@ -14,7 +14,11 @@ public class RedisConnectionCache {
 	private static LinkedList<Channel> redisConnection = new LinkedList<Channel>();
 
 	public static Channel getFirst() {
-		return redisConnection.get(0);
+		Channel ch=redisConnection.get(0);
+		if(ch==null || !ch.isActive()){
+			redisConnection.remove();
+		}
+		return ch;
 	}
 
 	public static void add(Channel value) {

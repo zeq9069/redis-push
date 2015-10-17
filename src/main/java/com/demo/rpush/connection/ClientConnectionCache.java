@@ -18,11 +18,19 @@ public class ClientConnectionCache {
 	private static final ClientConfig cc = new RPushPropertiesConfig(new ConfigLoader()).getClientConfig();
 
 	public static ClientConnection get() {
+		ClientConnection ccon;
 		if (cc.getRoute().equals(ClientConfig.ROUTE_WEIGHT)) {
-			return weights();
-		} else {
-			return poll();
+			ccon= weights();
+		} else if(cc.getRoute().equals(ClientConfig.ROUTE_POLL)){
+			ccon= poll();
+		}else{
+			ccon=poll();//默认轮询
 		}
+		if(ccon.channel==null || !ccon.channel.isActive()){
+			clientConnect.remove(ccon);
+			ccon=get();
+		}
+		return ccon;
 	}
 
 	//轮询

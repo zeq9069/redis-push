@@ -129,7 +129,7 @@ public class RBootstrap {
 				ChannelPipeline pip = ch.pipeline();
 				pip.addLast(new RedisProtocolDecoder());
 				pip.addLast(new RedisProtocolEncoder());
-				pip.addLast(new ServerHandler());
+				pip.addLast(new ServerHandler(rPushConfig.getClientConfig()));
 			}
 		});
 
