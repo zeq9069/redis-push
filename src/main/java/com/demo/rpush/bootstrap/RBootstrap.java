@@ -40,7 +40,7 @@ public class RBootstrap {
 	private static RPushPropertiesConfig rPushConfig;
 	private static String command;
 	private static ScheduledExecutorService exec = new ScheduledThreadPoolExecutor(1);
-
+	private static ScheduledExecutorService pull=new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
 	@SuppressWarnings("static-access")
 	public RBootstrap() {
 		rPushConfig = new RPushPropertiesConfig(new ConfigLoader());
@@ -48,20 +48,25 @@ public class RBootstrap {
 	}
 
 	private static void pull() {
-		
-		Timer t = new Timer();
-		t.schedule(new TimerTask() {
+		Timer timer=new Timer();
+		timer.schedule(new TimerTask() {
+			
 			@Override
 			public void run() {
-				if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
-						&& !ClientConnectionCache.isEmpty()) {
-					Channel ch = RedisConnectionCache.getFirst();
-					for(int i=0;i<100;i++){
-						ch.writeAndFlush(command);
+				pull.execute(new Runnable() {
+					@Override
+					public void run() {
+						if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
+								&& !ClientConnectionCache.isEmpty()) {
+							Channel ch = RedisConnectionCache.getFirst();
+							for(int i=0;i<100;i++){
+								ch.writeAndFlush(command);
+							}
+						}
 					}
-				}
+				});
 			}
-		}, 0,1);
+		},0,1); 
 	}
 
 	/**

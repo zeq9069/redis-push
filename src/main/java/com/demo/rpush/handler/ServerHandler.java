@@ -6,8 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 
 import com.demo.rpush.bootstrap.config.ClientConfig;
-import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
-import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
 import com.demo.rpush.connection.ClientConnection;
 import com.demo.rpush.connection.ClientConnectionCache;
 
