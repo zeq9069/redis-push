@@ -25,7 +25,7 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		System.out.println("redis-client接收到：" + msg.toString());
+		//System.out.println("redis-client接收到：" + msg.toString());导致内存飙升
 		if (!ClientConnectionCache.isEmpty()) {
 			ClientConnection cc = ClientConnectionCache.get();
 			Channel ch = cc.getChannel();
