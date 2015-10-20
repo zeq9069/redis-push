@@ -30,13 +30,10 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
 		//一条完整命令至少的字节数
-		if (in.readableBytes() <= 5) {
+		if (in.readableBytes() < 5) {
 			return;
 		}
-		if (!check(in)) {
-			//不满足一条完整命令，等挤压更多数据（条件：in内容不变，out内容不变）
-			return;
-		}
+		in.markReaderIndex();
 		byte first = in.readByte();
 		if (first == '$') {//如果是批量回复数据
 			String v = "";
@@ -51,6 +48,10 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 
 			int length = Integer.parseInt(v);
 			if (length == -1) {
+				return;
+			}
+			if(in.readableBytes()<length+2){
+				in.resetReaderIndex();
 				return;
 			}
 			byte[] bb = new byte[length];
@@ -71,33 +72,5 @@ public class RedisProtocolDecoder extends ByteToMessageDecoder {
 			throw new RedisQueueTypeException("redis server返回错误信息:" + result);
 		}
 
-	}
-
-	/**
-	 * 检查是否至少包含一条完整命令
-	 * @param in
-	 * @return
-	 */
-	public boolean check(ByteBuf in) {
-		byte[] b1 = new byte[in.readableBytes()];
-		ByteBuf in2 = in.copy();
-		in2.readBytes(b1, 0, in2.readableBytes());
-		in2.release();
-		in2 = null;
-		String len = "";
-		for (byte b : b1) {
-			if (b != '$') {
-				if (b == '\r') {
-					break;
-				}
-				len += (char) b;
-			}
-		}
-		int len2 = Integer.parseInt(len);
-		if (in.readableBytes() < len2 + 1 + 2 + 2 + (len2 + "").length()) {
-			b1 = null;
-			return false;
-		}
-		return true;
 	}
 }
