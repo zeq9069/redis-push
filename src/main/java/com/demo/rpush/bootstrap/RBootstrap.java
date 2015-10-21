@@ -40,7 +40,9 @@ public class RBootstrap {
 	private static RPushPropertiesConfig rPushConfig;
 	private static String command;
 	private static ScheduledExecutorService exec = new ScheduledThreadPoolExecutor(1);
-	private static ScheduledExecutorService pull=new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
+	private static ScheduledExecutorService pull = new ScheduledThreadPoolExecutor(Runtime.getRuntime()
+			.availableProcessors());
+
 	@SuppressWarnings("static-access")
 	public RBootstrap() {
 		rPushConfig = new RPushPropertiesConfig(new ConfigLoader());
@@ -48,9 +50,9 @@ public class RBootstrap {
 	}
 
 	private static void pull() {
-		Timer timer=new Timer();
+		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
-			
+
 			@Override
 			public void run() {
 				pull.execute(new Runnable() {
@@ -59,14 +61,14 @@ public class RBootstrap {
 						if (!RedisConnectionCache.isEmpty() && RedisConnectionCache.getFirst().isActive()
 								&& !ClientConnectionCache.isEmpty()) {
 							Channel ch = RedisConnectionCache.getFirst();
-							for(int i=0;i<100;i++){
+							for (int i = 0; i < 50; i++) {//按照redis每秒处理50000数据来处理，不可超出redis处理能力，过大会导致很多问题
 								ch.writeAndFlush(command);
 							}
 						}
 					}
 				});
 			}
-		},0,1); 
+		}, 0, 1);
 	}
 
 	/**
@@ -78,7 +80,7 @@ public class RBootstrap {
 		client.group(b);
 		client.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 6000).option(ChannelOption.TCP_NODELAY, true)
 				.option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_KEEPALIVE, true)
-				.option(ChannelOption.SO_SNDBUF, 65535).option(ChannelOption.SO_RCVBUF, 65535);
+				.option(ChannelOption.SO_SNDBUF, 128).option(ChannelOption.SO_RCVBUF, 128);
 		client.channel(NioSocketChannel.class);
 		client.handler(new ChannelInitializer<Channel>() {
 			@Override
@@ -151,7 +153,7 @@ public class RBootstrap {
 	}
 
 	public void start() {
-		
+
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
