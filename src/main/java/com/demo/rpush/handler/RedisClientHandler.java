@@ -3,6 +3,7 @@ package com.demo.rpush.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.ReferenceCountUtil;
 
 import com.demo.rpush.bootstrap.exception.RedisServiceException;
 import com.demo.rpush.connection.ClientConnection;
@@ -26,6 +27,7 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		//System.out.println("redis-client接收到：" + msg.toString());导致内存飙升
+		try{
 		if (!ClientConnectionCache.isEmpty()) {
 			ClientConnection cc = ClientConnectionCache.get();
 			Channel ch = cc.getChannel();
@@ -34,6 +36,9 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 			} else {
 				throw new RedisServiceException("redis 服务出现异常");
 			}
+		}
+		}finally{
+			ReferenceCountUtil.release(msg);
 		}
 	}
 
