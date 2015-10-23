@@ -2,6 +2,7 @@ package com.demo.rpush.bootstrap;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -17,6 +18,9 @@ import java.util.TimerTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
 import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
@@ -37,6 +41,8 @@ import com.demo.rpush.handler.ServerHandler;
  */
 public class RBootstrap {
 
+	private static final Logger logger=LoggerFactory.getLogger(RBootstrap.class);
+	
 	private static RPushPropertiesConfig rPushConfig;
 	private static String command;
 	private static ScheduledExecutorService exec = new ScheduledThreadPoolExecutor(1);
@@ -50,9 +56,9 @@ public class RBootstrap {
 	}
 
 	private static void pull() {
+		logger.info("starting pull redis data.");
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
-
 			@Override
 			public void run() {
 				pull.execute(new Runnable() {
@@ -75,18 +81,18 @@ public class RBootstrap {
 	 * 连接redis-server
 	 */
 	private static void clientStart() {
+		logger.info("redis-client starting...");
 		EventLoopGroup b = new NioEventLoopGroup();
 		Bootstrap client = new Bootstrap();
 		client.group(b);
 		client.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 6000).option(ChannelOption.TCP_NODELAY, true)
 				.option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_KEEPALIVE, true)
-				.option(ChannelOption.SO_SNDBUF, 128).option(ChannelOption.SO_RCVBUF, 128);
+				.option(ChannelOption.SO_SNDBUF, 65535).option(ChannelOption.SO_RCVBUF, 65535).option(ChannelOption.RCVBUF_ALLOCATOR,AdaptiveRecvByteBufAllocator.DEFAULT);
 		client.channel(NioSocketChannel.class);
 		client.handler(new ChannelInitializer<Channel>() {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
 				ChannelPipeline pip = ch.pipeline();
-				//pip.addLast(new DelimiterBasedFrameDecoder(1024, false, Unpooled.copiedBuffer("\r\n".getBytes())));
 				pip.addLast(new RedisProtocolDecoder());
 				pip.addLast(new RedisProtocolEncoder());
 				pip.addLast(new RedisClientHandler());
@@ -95,10 +101,13 @@ public class RBootstrap {
 		try {
 			ChannelFuture cf = client.connect(rPushConfig.getRedisConfig().getHost(),
 					rPushConfig.getRedisConfig().getPort()).sync();
+			logger.info("The redis-client start successfully");
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
+			logger.error("redis-client error.");
 			e.printStackTrace();
 		} finally {
+			logger.info("redis-client restarting...");
 			exec.execute(new Runnable() {
 				@Override
 				public void run() {
@@ -107,9 +116,10 @@ public class RBootstrap {
 						try {
 							clientStart();
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.error("reconnecting redis server fialed.{}",e.getMessage());
 						}
 					} catch (Exception e) {
+						logger.error("redis-client restart failed.{}",e.getMessage());
 						e.printStackTrace();
 					}
 				}
@@ -121,6 +131,7 @@ public class RBootstrap {
 	 * 启动自定义服务my server
 	 */
 	private static void serverStart() {
+		logger.info("The redis-push server starting...");
 		EventLoopGroup boss = new NioEventLoopGroup();
 		EventLoopGroup work = new NioEventLoopGroup();
 
@@ -142,10 +153,13 @@ public class RBootstrap {
 
 		try {
 			ChannelFuture cf = server.bind(rPushConfig.getrServerConfig().getPort()).sync();
+			logger.info("The redis-push server start successfully");
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
+			logger.error("redis-push server error.");
 			e.printStackTrace();
 		} finally {
+			logger.warn("redis-push server shutdown.");
 			boss.shutdownGracefully();
 			work.shutdownGracefully();
 		}
@@ -153,7 +167,6 @@ public class RBootstrap {
 	}
 
 	public void start() {
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {

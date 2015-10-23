@@ -1,5 +1,8 @@
 package com.demo.rpush.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,15 +15,17 @@ import com.demo.rpush.connection.RedisConnectionCache;
 
 public class RedisClientHandler extends ChannelHandlerAdapter {
 
+	private static final Logger logger=LoggerFactory.getLogger(RedisClientHandler.class);
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		logger.error("The redis-client  error.");
 		cause.printStackTrace();
 		ctx.close();
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		System.out.println("active");
+		logger.info("The redis-client success to connect redis server.");
 		RedisConnectionCache.add(ctx.channel());
 	}
 
@@ -37,6 +42,8 @@ public class RedisClientHandler extends ChannelHandlerAdapter {
 				throw new RedisServiceException("redis 服务出现异常");
 			}
 		}
+		}catch(Exception e){
+			e.printStackTrace();
 		}finally{
 			ReferenceCountUtil.release(msg);
 		}

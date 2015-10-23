@@ -1,7 +1,11 @@
 package com.demo.rpush.connection;
 
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.demo.rpush.bootstrap.config.ClientConfig;
 import com.demo.rpush.bootstrap.config.RPushPropertiesConfig;
@@ -14,6 +18,8 @@ import com.demo.rpush.bootstrap.config.loader.ConfigLoader;
  *
  */
 public class ClientConnectionCache {
+	
+	private static final Logger logger=LoggerFactory.getLogger(ClientConnectionCache.class);
 	private static LinkedList<ClientConnection> clientConnect = new LinkedList<ClientConnection>();
 	private static final ClientConfig cc = new RPushPropertiesConfig(new ConfigLoader()).getClientConfig();
 
@@ -28,6 +34,7 @@ public class ClientConnectionCache {
 		}
 		if(ccon.channel==null || !ccon.channel.isActive()){
 			clientConnect.remove(ccon);
+			logger.warn("Remove a connect.");
 			ccon=get();
 		}
 		return ccon;
@@ -35,8 +42,14 @@ public class ClientConnectionCache {
 
 	//轮询
 	private static synchronized ClientConnection poll() {
-		ClientConnection cc = clientConnect.pop();
-		clientConnect.addLast(cc);
+		ClientConnection cc=null;
+		try{
+			 cc= clientConnect.pop();
+			clientConnect.addLast(cc);
+		}catch(NoSuchElementException e){
+			logger.error("The clientConnectoinCache pop error.");
+			e.printStackTrace();
+		}
 		return cc;
 	}
 

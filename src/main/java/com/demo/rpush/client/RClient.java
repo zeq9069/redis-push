@@ -17,6 +17,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.demo.rpush.handler.ClientHandler;
 
 /**
@@ -28,10 +31,11 @@ import com.demo.rpush.handler.ClientHandler;
  */
 public class RClient {
 
+	private static final Logger logger=LoggerFactory.getLogger(RClient.class);
 	private static ScheduledExecutorService exec = new ScheduledThreadPoolExecutor(1);
 
 	public void start() {
-
+		logger.info("starting to connect redis-push server...");
 		EventLoopGroup b = new NioEventLoopGroup();
 		Bootstrap client = new Bootstrap();
 		client.group(b);
@@ -48,11 +52,13 @@ public class RClient {
 		});
 		try {
 			ChannelFuture cf = client.connect("127.0.0.1", 7379).sync();
-
+			logger.info("The client start successfully");
 			cf.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
+			logger.error("client error.");
 			e.printStackTrace();
 		} finally {
+			logger.info("client try to reconnect the redis-push server...");
 			exec.execute(new Runnable() {
 				@Override
 				public void run() {
@@ -61,12 +67,12 @@ public class RClient {
 						try {
 							start();
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.error("reconnecting redis-push server fialed.{}",e.getMessage());
 						}
 					} catch (InterruptedException e) {
+						logger.error("client reconect redis-push server fialed.");
 						e.printStackTrace();
 					}
-
 				}
 			});
 		}
